@@ -1,0 +1,164 @@
+"3.3 (created: 2011/11/13 17:32:12)
+
+set hintchars=fjklasdhguionmerwc
+
+"ブラウザタイトル
+set titlestring=Firefox
+set gui=noaddons,bookmarks,menu,navigation,tabs
+
+":[tab]open時の補完設定(s=検索エンジン+キーワードURL,l=ロケーションバーの補完機能を利用,b=bookmark)
+set complete=sl
+
+"コマンド入力時にコマンド名を自動補完
+"set wildoptions=auto
+
+"j/kの移動量3倍
+map j 3<C-e>
+map k 3<C-y>
+
+"h/lで左右のタブに移動
+map h <C-p>
+map l <C-n>
+
+"クイックヒントモードの入力時、日本語入力を停止
+style -name commandline-ime chrome://* #liberator-commandline-command input {ime-mode: inactive;}
+
+" Hint
+hi HintElem background-color: #fffac6; border-radius: 0.1px;
+hi Hint font-family: Calibri (Body), ＭＳ Ｐゴシック, sans-serif; font-size: 11px; font-weight: bold; background: -moz-linear-gradient(top, #6BA7EF, #3163AA); text-shadow: 0 1px #1D3C66; text-transform: uppercase; color: white; background-color: red; padding: 1px 1px; border-radius: 3px; border: 1px solid #3366AD;
+
+
+",a を入力時 :alcを自動補完
+map ,a :alc<space>
+":alc <word> でalcを開き<word>を検索。
+javascript <<EOM
+(function(){
+ commands.addUserCommand(["alc"], "Look up a word",
+	 function(args) {
+	 var word = (args.length == 1) ? args[0].toString() : args.string;
+
+	 if ( !word ) {
+	 liberator.echo("Usage: alc [word]");
+	 } else {
+	 liberator.open("http://eow.alc.co.jp/" + encodeURIComponent(word) + "/UTF-8/", liberator.NEW_TAB);
+	 }
+	 }
+	 );
+ })();
+EOM
+
+",l を入力時 googleのI'm feeling luckyで開く
+map ,l :tabopen http://www.google.co.jp/search?ie=UTF-8&sourceid=navclient&gfns=1&q=
+":gdv を入力時pdfファイル等をgoogle docs viewerで開くためのリンクを作成
+javascript <<EOM
+(function(){
+ liberator.modules.commands.addUserCommand(["gdv", "googleDocsViewer"], "Open PDF file with Google Docs Viewer",
+	 function(args) {
+	 if (!liberator.modules.buffer.URL || liberator.modules.buffer.URL == 'about:blank'){
+	 return false;
+	 }
+	 var growlNotification = function(count) {
+	 var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
+	 .getService(Components.interfaces.nsIAlertsService);
+	 alertsService.showAlertNotification("chrome://global/skin/icons/information-32.png", "Google Docs Viewer links count", count);
+	 };
+	 var url = liberator.modules.buffer.URL;
+	 var doc = window.content.document;
+	 (function() {
+	  if (url.indexOf('http://docs.google.com/') == -1) {
+	  var counter = 0;
+	  var exts = ['pdf', 'ppt', 'tif'];
+	  var xpath = (function() {
+		  var x = '//a[';
+		  for (var i=0; i<exts.length; i++) {
+		  x += i == 0 ? '' : ' or ';
+		  x += 'substring(@href, string-length(@href) - string-length(".' + exts[i] + '") + 1) = ".' + exts[i] + '"';
+		  }
+		  x += ']';
+		  return x;
+		  })();
+	  var elems = doc.evaluate(xpath,
+		  doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+	  for (var i=0,len=elems.snapshotLength; i<len; i++) {
+	  var elem = elems.snapshotItem(i);
+	  if (elem.href.indexOf('http://docs.google.com/viewer?url=') == -1) {
+	  var icon = doc.createElement('IMG');
+	  var anc = doc.createElement('A');
+	  icon.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTM5jWRgMAAAFHSURBVDiNlZOxTgJBEIa/3Ry8gTyD76C9FQbi9cTCRGw1sTQ2FkZKDkKxyRWUNhb2voU9zXFAJwW7h2Mhd+DdhcM/mWQ3O/PvN7NZxUZhGAZAl/0adDqdm9ITY4ys1+u9YYwRY0ywW6fTRZIkAMxmM+I4Jo5jptMpURQRRREAzWaTJEm6o9EoKBg45wBQSv0JrTVKKQCstbTbbZxz3X6/HwCo4ce3VPQNwNWpMJlMqNVq1Ot1xuMxwEA9vR9mcH9WTOv1enjzJbxc7C++e4X5fI7Ir4mI0Gg0sNbiLb7gMqwmSGciItlMVqsV3mIJb+UvC8B5sDXIa0OgOHmuJtBaZy2kygg+H8vnePywvTUlSNvYIYCj2yJeXmUtZATfw3ICfV0k2JVzDi+f+B8Ca+124/u+iEjlh0pDRMT3fclsW63WId85r8EPLeTd8KdMB6AAAAAASUVORK5CYII=';
+	  anc.insertBefore(icon, anc.firstChild);
+	  anc.href = 'http://docs.google.com/viewer?url=' + encodeURIComponent(elem.href);
+	  anc.target = '_blank';
+	  elem.parentNode.insertBefore(anc, elem.nextSibling);
+	  counter++;
+	  }
+	  }
+	  growlNotification(counter);
+	 }
+	 })();
+	 }, {
+argCount: "?",
+		  hereDoc: false,
+		  bang: false,
+		  count: false,
+		  literal: false
+	 }
+);
+})();
+EOM
+
+",m を入力時 :googelmapsを自動補完
+map ,m :googlemaps<space>
+":googlemaps <word> でグーグルマップを開き<word>を検索。
+javascript <<EOM
+(function(){
+ commands.addUserCommand(["googlemaps"], "Look up a word",
+	 function(args) {
+	 var word = (args.length == 1) ? args[0].toString() : args.string;
+
+	 if ( !word ) {
+	 liberator.echo("Usage: googlemaps [word]");
+	 } else {
+	 liberator.open("http://maps.google.co.jp/maps?q=" + encodeURIComponent(word) , liberator.NEW_TAB);
+	 }
+	 }
+	 );
+ })();
+EOM
+
+",s を入力時 :googelscholarを自動補完
+map ,s :googlescholar<space>
+":googlescholar <word> でグーグルスカラーを開き<word>を検索。
+javascript <<EOM
+(function(){
+ commands.addUserCommand(["googlescholar"], "Look up a word",
+	 function(args) {
+	 var word = (args.length == 1) ? args[0].toString() : args.string;
+
+	 if ( !word ) {
+	 liberator.echo("Usage: googlescholar [word]");
+	 } else {
+	 liberator.open("http://scholar.google.co.jp/scholar?hl=ja&q=" + encodeURIComponent(word) + "&btnG=&lr=" , liberator.NEW_TAB);
+	 }
+	 }
+	 );
+ })();
+EOM
+
+",n を入力時 :longmanを自動補完
+map ,n :longman<space>
+":longman <word> でロングマン英英辞典を開き<word>を検索。
+javascript <<EOM
+(function(){
+ commands.addUserCommand(["longman"], "Look up a word",
+	 function(args) {
+	 var word = (args.length == 1) ? args[0].toString() : args.string;
+
+	 if ( !word ) {
+	 liberator.echo("Usage: longman [word]");
+	 } else {
+	 liberator.open("http://www.ldoceonline.com/search/?q=" + encodeURIComponent(word) , liberator.NEW_TAB);
+	 }
+	 }
+	 );
+ })();
+EOM
