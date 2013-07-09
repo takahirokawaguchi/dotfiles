@@ -198,3 +198,6 @@ alias zmv='noglob zmv'
 
 # editor
 export EDITOR=vi
+
+#PATH
+export PATH=$PATH:~/program/sh
