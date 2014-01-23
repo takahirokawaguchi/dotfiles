@@ -162,3 +162,26 @@ javascript <<EOM
 	 );
  })();
 EOM
+
+
+",wを入力時　:weblioを自動補完
+map ,w :weblio<space>
+
+":weblio <word>でweblio英和辞典を開き<word>を検索．
+javascript <<EOM
+(function(){
+    commands.addUserCommand(["weblio"], "Look up a word",
+        function(args) {
+            var word = (args.length == 1) ? args[0].toString() : args.string;
+
+            if ( !word ) {
+                liberator.echo("Usage: weblio [word]");
+            } else {
+                liberator.open("http://ejje.weblio.jp/content/" + encodeURIComponent(word), liberator.NEW_TAB);
+            }
+        }
+    );
+})();
+EOM
+
+

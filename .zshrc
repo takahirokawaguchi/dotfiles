@@ -201,3 +201,11 @@ export EDITOR=vi
 
 #PATH
 export PATH=$PATH:~/program/sh
+
+# completion of large char
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+#set PATHs for TeX Live 2013 (yasaka)
+export MANPATH=/usr/local/texlive/2013/texmf-dist/doc/:$MANPATH
+export INFOPATH=/usr/local/texlive/2013/texmf-dist/doc/info:$INFOPATH
+export PATH=/usr/local/texlive/2013/bin/x86_64-linux:$PATH
